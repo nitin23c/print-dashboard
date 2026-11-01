@@ -21,6 +21,7 @@ whether colour printing is allowed. The page is built for phones.
 - [Setup](#setup)
 - [Other ways to run it](#other-ways-to-run-it)
 - [Settings](#settings)
+- [Naming your printer](#naming-your-printer)
 - [Using the dashboard](#using-the-dashboard)
 - [Colour control](#colour-control)
 - [Printer compatibility](#printer-compatibility)
@@ -212,6 +213,35 @@ same names and defaults as the CUPS image, so one `.env` can serve both containe
 | `BIND_ADDRESS` | `0.0.0.0` | Address to listen on |
 | `PORT` | `8080` | Port to listen on |
 | `TZ` | `UTC` | Timezone for today and this month |
+
+## Naming your printer
+
+The name appears in two places, and each has its own setting. Neither needs a code
+change.
+
+| Where it shows | Set by | How to change it |
+|---|---|---|
+| Top of the dashboard and the browser tab | `DASHBOARD_TITLE` | Set it in `.env`, then run `docker compose up -d dashboard` |
+| Print menu on iPhones, iPads and Macs | The queue's description in CUPS | Use `-D` when creating the queue, or the command below |
+
+For example, in `.env`:
+
+```
+DASHBOARD_TITLE=Office Printer
+```
+
+To change the name in the Print menu on an existing queue, replace `printadmin`
+with your `CUPSADMIN`:
+
+```bash
+docker exec cups su -s /bin/sh printadmin -c "lpadmin -p Home_Printer -D 'Office Printer'"
+```
+
+Devices may keep showing the old name for a short while.
+
+The part after the `@` comes from the CUPS image's `AVAHI_HOSTNAME` setting. The
+queue's own name, `Home_Printer` in these examples, is separate. If you pick a
+different one when creating the queue, set `CUPS_QUEUE` to match.
 
 ## Using the dashboard
 

@@ -375,6 +375,10 @@ class ServerReadTests(Case):
         self.assertNotIn(b"<script>", body)
         self.assertNotIn(b"onclick", body)
 
+    def test_page_has_no_built_in_printer_name_to_flash_before_the_title_loads(self):
+        _, body, _ = self.request("GET", "/")
+        self.assertNotIn(b"Home Printer", body)
+
     def test_healthz(self):
         self.assertEqual(self.api("GET", "/healthz"), (200, {"ok": True}))
 
