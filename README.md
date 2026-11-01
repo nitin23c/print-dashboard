@@ -254,6 +254,10 @@ server has the file, and you can lock your phone.
 - Photos are scaled to fill the page and rotated to fit.
 - Word, Excel and other formats aren't accepted. Export them as PDF first.
 
+**To switch between light and dark,** tap the sun or moon at the top right. The
+page follows your device's setting until you do. Your choice is saved in that
+browser only, so each person and device keeps their own.
+
 **To add it to a phone's Home Screen,** open the page in Safari and choose
 Share, then Add to Home Screen.
 
@@ -362,6 +366,7 @@ print.example.com {
 |---|---|---|
 | Job name, owner, size, pages and status | `/data/history.db` | `KEEP_DAYS` |
 | The queue's colour definition | `/data/color.ppd` | Until replaced |
+| Light or dark choice | The viewer's own browser | Until they clear it |
 
 - **Uploaded documents are never written to disk by the dashboard.** They pass
   through memory to CUPS. To count pages it briefly fetches the queued file into a
@@ -438,7 +443,7 @@ Each module has one job, so you can reuse or replace it on its own.
 | `history.py` | Saves finished jobs in SQLite |
 | `monitor.py` | The polling loop, and the state the page shows |
 | `server.py` | The web server and its routes |
-| `static/` | The page: `index.html`, `app.js` and `style.css` |
+| `static/` | The page: `index.html`, `app.js`, `theme.js` and `style.css` |
 
 ## Licence
 

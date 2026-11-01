@@ -126,6 +126,77 @@ class LayoutTests(BrowserCase):
         self.assertEqual(self.overflow(), {"page": 0, "parts": []})
 
 
+class ThemeTests(BrowserCase):
+    LIGHT, DARK = "rgb(246, 247, 249)", "rgb(17, 19, 24)"
+
+    def background(self):
+        return self.page.evaluate("getComputedStyle(document.body).backgroundColor")
+
+    def label(self):
+        return self.page.locator("#theme").get_attribute("aria-label")
+
+    def test_follows_the_device_until_chosen(self):
+        self.assertEqual((self.background(), self.label()), (self.LIGHT, "Switch to dark mode"))
+        self.open_page(color_scheme="dark")
+        self.assertEqual((self.background(), self.label()), (self.DARK, "Switch to light mode"))
+
+    def test_button_switches_both_ways(self):
+        self.page.click("#theme")
+        self.assertEqual((self.background(), self.label()), (self.DARK, "Switch to light mode"))
+        self.page.click("#theme")
+        self.assertEqual((self.background(), self.label()), (self.LIGHT, "Switch to dark mode"))
+
+    def test_choice_overrides_a_dark_device(self):
+        self.open_page(color_scheme="dark")
+        self.page.click("#theme")
+        self.assertEqual(self.background(), self.LIGHT)
+
+    def test_choice_survives_a_reload(self):
+        self.page.click("#theme")
+        self.page.reload()
+        self.assertEqual((self.background(), self.label()), (self.DARK, "Switch to light mode"))
+
+    def test_saved_theme_is_set_before_the_page_finishes(self):
+        self.page.click("#theme")
+        self.page.add_init_script("document.addEventListener('readystatechange', () => { window.seen ??= document.documentElement.dataset.theme })")
+        self.page.reload()
+        self.assertEqual(self.page.evaluate("window.seen"), "dark")
+
+    def test_following_the_device_live(self):
+        self.page.emulate_media(color_scheme="dark")
+        self.assertEqual(self.background(), self.DARK)
+        expect(self.page.locator("#theme")).to_have_attribute("aria-label", "Switch to light mode")
+
+    def test_browser_bar_colour_matches(self):
+        self.page.click("#theme")
+        colors = self.page.evaluate("[...document.querySelectorAll('meta[name=theme-color]')].map(m => m.content)")
+        self.assertEqual(set(colors), {"#111318"})
+
+    def test_page_works_when_storage_is_blocked(self):
+        self.context.add_init_script("Object.defineProperty(window, 'localStorage', {get() { throw new Error('blocked') }})")
+        self.page.reload()
+        expect(self.page.locator("#hero b")).to_have_text("Ready")
+        self.page.click("#theme")
+        self.assertEqual(self.background(), self.DARK)
+
+    def test_bad_saved_value_is_ignored(self):
+        self.page.evaluate("localStorage.setItem('theme', 'purple')")
+        self.page.reload()
+        self.assertEqual(self.background(), self.LIGHT)
+
+    def test_status_colours_stay_readable_in_dark(self):
+        self.page.click("#theme")
+        self.assertEqual(self.page.evaluate("getComputedStyle(document.body).color"), "rgb(236, 238, 242)")
+        self.assertEqual(self.page.evaluate("getComputedStyle(document.documentElement).colorScheme"), "dark")
+
+    def test_long_title_with_the_button_fits_a_small_phone(self):
+        self.monitor.settings = self.make_settings(title="AVeryLongPrinterNameWithNoSpacesThatKeepsGoingAndGoingForever")
+        self.page.set_viewport_size({"width": 320, "height": 700})
+        expect(self.page.locator("#title")).to_contain_text("AVeryLong")
+        self.assertEqual(self.page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth"), 0)
+        self.assertGreaterEqual(self.page.locator("#theme").bounding_box()["width"], 44)
+
+
 class StatusTests(BrowserCase):
     def test_title_comes_from_settings(self):
         expect(self.page.locator("#title")).to_have_text("Test Printer")

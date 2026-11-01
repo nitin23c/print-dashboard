@@ -78,6 +78,16 @@ async function refresh() {
   }
 }
 
+const systemDark = matchMedia("(prefers-color-scheme: dark)");
+const isDark = () => (document.documentElement.dataset.theme || (systemDark.matches ? "dark" : "light")) === "dark";
+
+function showTheme() {
+  const dark = isDark();
+  $("theme").textContent = dark ? "☀\uFE0E" : "☾\uFE0E";
+  $("theme").setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  document.querySelectorAll("meta[name=theme-color]").forEach(meta => { meta.content = dark ? "#111318" : "#f6f7f9"; });
+}
+
 function showChosen() {
   const any = chosen.length > 0;
   $("options").hidden = !any;
@@ -109,6 +119,14 @@ function upload(file, color, progress) {
     xhr.send(file);
   });
 }
+
+$("theme").addEventListener("click", () => {
+  const theme = isDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem("theme", theme); } catch {}
+  showTheme();
+});
+systemDark.addEventListener("change", showTheme);
 
 $("file").addEventListener("change", () => {
   chosen = [...$("file").files];
@@ -166,5 +184,6 @@ document.addEventListener("click", async e => {
   refresh();
 });
 
+showTheme();
 refresh();
 setInterval(refresh, 3000);

@@ -10,6 +10,7 @@ from .pages import document_type
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 FILES = {"/": ("index.html", "text/html; charset=utf-8"),
          "/app.js": ("app.js", "text/javascript; charset=utf-8"),
+         "/theme.js": ("theme.js", "text/javascript; charset=utf-8"),
          "/style.css": ("style.css", "text/css; charset=utf-8")}
 POLICY = "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
 

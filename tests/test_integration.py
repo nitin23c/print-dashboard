@@ -357,7 +357,7 @@ class MonitorTests(Case):
 
 class ServerReadTests(Case):
     def test_page_and_assets(self):
-        for path, kind in (("/", "text/html"), ("/app.js", "text/javascript"), ("/style.css", "text/css")):
+        for path, kind in (("/", "text/html"), ("/app.js", "text/javascript"), ("/theme.js", "text/javascript"), ("/style.css", "text/css")):
             code, body, headers = self.request("GET", path)
             self.assertEqual(code, 200)
             self.assertIn(kind, headers["Content-Type"])
@@ -378,6 +378,11 @@ class ServerReadTests(Case):
     def test_page_has_no_built_in_printer_name_to_flash_before_the_title_loads(self):
         _, body, _ = self.request("GET", "/")
         self.assertNotIn(b"Home Printer", body)
+
+    def test_saved_theme_is_applied_before_the_page_draws(self):
+        _, body, _ = self.request("GET", "/")
+        self.assertLess(body.index(b"/theme.js"), body.index(b"/style.css"))
+        self.assertLess(body.index(b"/theme.js"), body.index(b"<body>"))
 
     def test_healthz(self):
         self.assertEqual(self.api("GET", "/healthz"), (200, {"ok": True}))
