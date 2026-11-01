@@ -1,0 +1,36 @@
+# CUPS and the dashboard on one machine, as two separate containers.
+#
+# Copy this file and ../.env.example next to each other as compose.yml and .env,
+# set the values in .env, then run: docker compose up -d --build
+# See the README for the steps that follow.
+services:
+  cups:
+    image: chuckcharlie/cups-avahi-airprint:2.1.3
+    container_name: cups
+    # The image's start script runs with `set -x`, which would log the admin password.
+    command: ["sh", "-c", "sed -i '/^set -x$/d' /root/run_cups.sh && exec /root/run_cups.sh"]
+    # AirPrint discovery needs the host network.
+    network_mode: host
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./config:/config
+
+  dashboard:
+    # Change to `image:` if you publish your own build.
+    build: https://github.com/nitin23c/print-dashboard.git
+    container_name: print-dashboard
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # CUPS is on the host network, so this container reaches it through the host.
+      CUPS_URL: http://host.docker.internal:631
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - 8080:8080
+    volumes:
+      - dashboard-data:/data
+
+volumes:
+  dashboard-data:

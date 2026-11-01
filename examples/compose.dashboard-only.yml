@@ -1,0 +1,17 @@
+# Only the dashboard, for when CUPS already runs somewhere else.
+#
+# Set CUPS_URL in .env to the address of that CUPS, for example
+# http://192.0.2.10:631, then run: docker compose -f compose.dashboard-only.yml up -d --build
+services:
+  dashboard:
+    build: https://github.com/nitin23c/print-dashboard.git
+    container_name: print-dashboard
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 8080:8080
+    volumes:
+      - dashboard-data:/data
+
+volumes:
+  dashboard-data:

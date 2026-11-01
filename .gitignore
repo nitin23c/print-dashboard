@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+*.db
+*.db-*
+*.ppd
+__pycache__/
+*.pyc
+.venv/
+venv/
+dashboard-data/
+config/
